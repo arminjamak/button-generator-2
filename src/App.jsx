@@ -55,6 +55,50 @@ function App() {
   const [questionText, setQuestionText] = useState('Question');
   const [layout, setLayout] = useState('fullscreen');
 
+  const randomizeColors = () => {
+    // Randomly select title and body fonts
+    const titleStyles = Object.keys(textStyles.title);
+    const bodyStyles = Object.keys(textStyles.body);
+    const newTitleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
+    const newBodyStyle = bodyStyles[Math.floor(Math.random() * bodyStyles.length)];
+
+    // Define background colors
+    const lightBackgrounds = ['White', 'Grey'];
+    const darkBackgrounds = ['Black'];
+    
+    // Function to get random item from array
+    const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Select background color (alternating between light and dark)
+    const currentBgLuminance = chroma(getColorValue(backgroundColor)).luminance();
+    const isCurrentLight = currentBgLuminance > 0.5;
+    const newBgColor = getRandomItem(isCurrentLight ? darkBackgrounds : lightBackgrounds);
+
+    // Get available colors for options and check answer
+    const neutralColors = ['White', 'Grey', 'Black'];
+    const accentColors = ['Accent 1', 'Accent 2', 'Accent 3'];
+
+    // Select options color
+    const newOptionsColor = getRandomItem(neutralColors);
+
+    // Select check answer color
+    let newCheckAnswerColor;
+    if (Math.random() < 0.5) {
+      // Use a neutral color
+      newCheckAnswerColor = getRandomItem(neutralColors);
+    } else {
+      // Use accent color
+      newCheckAnswerColor = getRandomItem(accentColors);
+    }
+
+    // Update all states
+    setTitleStyle(newTitleStyle);
+    setBodyStyle(newBodyStyle);
+    setBackgroundColor(newBgColor);
+    setOptionsColor(newOptionsColor);
+    setCheckAnswerColor(newCheckAnswerColor);
+  };
+
   const calculateTextColor = (bgColor) => {
     const whiteContrast = chroma.contrast(bgColor, '#FFFFFF');
     const blackContrast = chroma.contrast(bgColor, '#000000');
@@ -72,6 +116,7 @@ function App() {
       case 'White': return '#FFFFFF';
       case 'Black': return '#000000';
       case 'Grey': return '#F3F4F6';
+
       case 'Accent 1': return colorPalette['Accent 1'];
       case 'Accent 2': return colorPalette['Accent 2'];
       case 'Accent 3': return colorPalette['Accent 3'];
@@ -245,6 +290,26 @@ function App() {
       </div>
 
       <div className="controls" style={controlsStyle}>
+        <button
+          onClick={randomizeColors}
+          style={{
+            width: '100%',
+            padding: '12px',
+            marginBottom: '24px',
+            backgroundColor: '#4B5563',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '500',
+            transition: 'background-color 0.2s',
+            ':hover': {
+              backgroundColor: '#374151'
+            }
+          }}
+        >
+          Randomize Colors
+        </button>
         <div className="control-group">
           <label>Layout</label>
           <select 
@@ -277,8 +342,8 @@ function App() {
         <div className="control-group">
           <label>Background color</label>
           <select value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)}>
-            <option value="Grey">Grey</option>
             <option value="White">White</option>
+            <option value="Grey">Grey</option>
             <option value="Black">Black</option>
             <option value="Accent 1">Accent 1</option>
             <option value="Accent 2">Accent 2</option>
@@ -289,8 +354,8 @@ function App() {
         <div className="control-group">
           <label>Options color</label>
           <select value={optionsColor} onChange={(e) => setOptionsColor(e.target.value)}>
-            <option value="Grey">Grey</option>
             <option value="White">White</option>
+            <option value="Grey">Grey</option>
             <option value="Black">Black</option>
             <option value="Accent 1">Accent 1</option>
             <option value="Accent 2">Accent 2</option>
@@ -301,8 +366,8 @@ function App() {
         <div className="control-group">
           <label>Check answer color</label>
           <select value={checkAnswerColor} onChange={(e) => setCheckAnswerColor(e.target.value)}>
-            <option value="Grey">Grey</option>
             <option value="White">White</option>
+            <option value="Grey">Grey</option>
             <option value="Black">Black</option>
             <option value="Accent 1">Accent 1</option>
             <option value="Accent 2">Accent 2</option>
