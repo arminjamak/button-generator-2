@@ -1,67 +1,120 @@
 import React, { useState } from 'react';
 import chroma from 'chroma-js';
 
-const textStyles = {
-  title: {
-    'Clean': {
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '2rem',
-      fontWeight: '600'
-    },
-    'Elegant': {
-      fontFamily: 'Playfair Display, serif',
-      fontSize: '2.25rem',
-      fontWeight: '600'
-    },
-    'Basic': {
-      fontFamily: 'Roboto, sans-serif',
-      fontSize: '1.875rem',
-      fontWeight: '600'
-    }
-  },
-  body: {
-    'Clean': {
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '1rem',
-      fontWeight: '400'
-    },
-    'Elegant': {
-      fontFamily: 'Playfair Display, serif',
-      fontSize: '1.125rem',
-      fontWeight: '400'
-    },
-    'Basic': {
-      fontFamily: 'Roboto, sans-serif',
-      fontSize: '1rem',
-      fontWeight: '400'
-    }
-  }
-};
+// Font configurations
 
-const colorPalette = {
+const defaultColorPalette = {
   'White': '#FFFFFF',
   'Black': '#000000',
+  'Grey': '#F3F4F6',
   'Accent 1': '#3B82F6',
   'Accent 2': '#10B981',
   'Accent 3': '#8B5CF6'
 };
 
+const allFonts = {
+  display: [
+    { name: 'Playfair Display', family: 'Playfair Display, serif', weight: '600', size: '2.5rem' },
+    { name: 'Inter Display', family: 'Inter, sans-serif', weight: '600', size: '2.25rem' },
+    { name: 'Roboto Display', family: 'Roboto, sans-serif', weight: '500', size: '2rem' },
+    { name: 'Montserrat Display', family: 'Montserrat, sans-serif', weight: '600', size: '2.25rem' },
+    { name: 'Raleway Display', family: 'Raleway, sans-serif', weight: '600', size: '2.25rem' },
+    { name: 'Oswald Display', family: 'Oswald, sans-serif', weight: '500', size: '2.5rem' },
+    { name: 'Lora Display', family: 'Lora, serif', weight: '600', size: '2.25rem' }
+  ],
+  body: [
+    { name: 'Inter', family: 'Inter, sans-serif', weight: '400', size: '1rem' },
+    { name: 'Roboto', family: 'Roboto, sans-serif', weight: '400', size: '1rem' },
+    { name: 'Playfair', family: 'Playfair Display, serif', weight: '400', size: '1.125rem' },
+    { name: 'Montserrat', family: 'Montserrat, sans-serif', weight: '400', size: '1rem' },
+    { name: 'Raleway', family: 'Raleway, sans-serif', weight: '400', size: '1rem' },
+    { name: 'Open Sans', family: 'Open Sans, sans-serif', weight: '400', size: '1rem' },
+    { name: 'Lora', family: 'Lora, serif', weight: '400', size: '1.125rem' }
+  ]
+};
+
+// Function to get a random subset of fonts
+const getRandomFonts = (fonts, count) => {
+  const shuffled = [...fonts].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+const generateFontPair = (fonts) => {
+  const displayFont = fonts.display[Math.floor(Math.random() * fonts.display.length)];
+  const bodyFont = fonts.body[Math.floor(Math.random() * fonts.body.length)];
+  
+  // Avoid using the same font family for both
+  if (displayFont.family === bodyFont.family) {
+    const otherBodyFonts = fonts.body.filter(f => f.family !== displayFont.family);
+    if (otherBodyFonts.length === 0) return { title: displayFont, body: bodyFont };
+    return { title: displayFont, body: otherBodyFonts[0] };
+  }
+
+  return { title: displayFont, body: bodyFont };
+};
+
+let colorPalette = { ...defaultColorPalette };
+
 function App() {
-  const [titleStyle, setTitleStyle] = useState('Clean');
-  const [bodyStyle, setBodyStyle] = useState('Clean');
   const [backgroundColor, setBackgroundColor] = useState('Grey');
   const [optionsColor, setOptionsColor] = useState('Grey');
   const [checkAnswerColor, setCheckAnswerColor] = useState('Black');
   const [questionText, setQuestionText] = useState('Question');
   const [layout, setLayout] = useState('fullscreen');
+  const [availableFonts, setAvailableFonts] = useState({
+    display: getRandomFonts(allFonts.display, 3),
+    body: getRandomFonts(allFonts.body, 3)
+  });
+  const [currentFontPair, setCurrentFontPair] = useState(() => ({
+    title: availableFonts.display[0],
+    body: availableFonts.body[0]
+  }));
 
-  const randomizeColors = () => {
-    // Randomly select title and body fonts
-    const titleStyles = Object.keys(textStyles.title);
-    const bodyStyles = Object.keys(textStyles.body);
-    const newTitleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
-    const newBodyStyle = bodyStyles[Math.floor(Math.random() * bodyStyles.length)];
+  const generateBrandKit = () => {
+    // Generate new accent colors using triadic harmony
+    const baseHue = Math.random() * 360; // Random base hue
+    const accent1 = chroma.hsl(baseHue, 0.7, 0.5).hex();
+    const accent2 = chroma.hsl((baseHue + 120) % 360, 0.7, 0.5).hex(); // +120 degrees
+    const accent3 = chroma.hsl((baseHue + 240) % 360, 0.7, 0.5).hex(); // +240 degrees
 
+    // Generate new neutral grey
+    const h = Math.random() * 20; // Slight hue variation
+    const s = 0.05 + Math.random() * 0.05; // 5-10% saturation
+    const l = 0.3 + Math.random() * 0.4; // 30-70% lightness for better visibility
+    const grey = chroma.hsl(h, s, l).hex();
+
+    // Update color palette first
+    colorPalette = {
+      ...defaultColorPalette,
+      'Grey': grey,
+      'Accent 1': accent1,
+      'Accent 2': accent2,
+      'Accent 3': accent3
+    };
+
+    // Generate new set of available fonts
+    const newFonts = {
+      display: getRandomFonts(allFonts.display, 3),
+      body: getRandomFonts(allFonts.body, 3)
+    };
+    setAvailableFonts(newFonts);
+
+    // Generate and set new font pair from new available fonts
+    setCurrentFontPair(generateFontPair(newFonts));
+
+    // Define available colors
+    const neutralColors = ['White', 'Grey', 'Black'];
+    const accentColors = ['Accent 1', 'Accent 2', 'Accent 3'];
+
+    // Set initial colors
+    setBackgroundColor(neutralColors[Math.floor(Math.random() * neutralColors.length)]);
+    setOptionsColor(neutralColors[Math.floor(Math.random() * neutralColors.length)]);
+    setCheckAnswerColor(Math.random() < 0.7 ? 
+      neutralColors[Math.floor(Math.random() * neutralColors.length)] : 
+      accentColors[Math.floor(Math.random() * accentColors.length)]);
+  };
+
+  const randomizeStyle = () => {
     // Define background colors
     const lightBackgrounds = ['White', 'Grey'];
     const darkBackgrounds = ['Black'];
@@ -78,22 +131,15 @@ function App() {
     const neutralColors = ['White', 'Grey', 'Black'];
     const accentColors = ['Accent 1', 'Accent 2', 'Accent 3'];
 
-    // Select options color
+    // Select options color (only neutral colors)
     const newOptionsColor = getRandomItem(neutralColors);
 
-    // Select check answer color
-    let newCheckAnswerColor;
-    if (Math.random() < 0.5) {
-      // Use a neutral color
-      newCheckAnswerColor = getRandomItem(neutralColors);
-    } else {
-      // Use accent color
-      newCheckAnswerColor = getRandomItem(accentColors);
-    }
+    // Select check answer color (30% chance for accent color)
+    const newCheckAnswerColor = Math.random() < 0.7 ? 
+      getRandomItem(neutralColors) : 
+      getRandomItem(accentColors);
 
     // Update all states
-    setTitleStyle(newTitleStyle);
-    setBodyStyle(newBodyStyle);
     setBackgroundColor(newBgColor);
     setOptionsColor(newOptionsColor);
     setCheckAnswerColor(newCheckAnswerColor);
@@ -172,7 +218,9 @@ function App() {
 
   // Style objects for buttons
   const optionButtonStyle = {
-    ...textStyles.body[bodyStyle],
+    fontFamily: currentFontPair.body.family,
+    fontSize: currentFontPair.body.size,
+    fontWeight: currentFontPair.body.weight,
     backgroundColor: optColor,
     color: optionsTextColor,
     border: optionsBorder,
@@ -181,7 +229,9 @@ function App() {
   };
 
   const checkAnswerButtonStyle = {
-    ...textStyles.body[bodyStyle],
+    fontFamily: currentFontPair.body.family,
+    fontSize: currentFontPair.body.size,
+    fontWeight: currentFontPair.body.weight,
     backgroundColor: checkColor,
     color: checkAnswerTextColor,
     border: checkAnswerBorder,
@@ -240,7 +290,6 @@ function App() {
   };
 
   const titleTextStyle = {
-    ...textStyles.title[titleStyle],
     color: questionTextColor,
     margin: layout === 'fullscreen' ? '32px 0 0 0' : '16px 0 -20px 0',
     textAlign: layout === 'fullscreen' ? 'center' : 'left',
@@ -258,7 +307,12 @@ function App() {
       alignItems: 'flex-start'
     }}>
       <div className="preview" style={previewStyle}>
-        <h1 style={titleTextStyle}>
+        <h1 style={{ 
+          fontFamily: currentFontPair.title.family,
+          fontSize: currentFontPair.title.size,
+          fontWeight: currentFontPair.title.weight,
+          ...titleTextStyle
+        }}>
           {questionText}
         </h1>
         <div className="options-grid" style={optionsGridStyle}>
@@ -290,26 +344,46 @@ function App() {
       </div>
 
       <div className="controls" style={controlsStyle}>
-        <button
-          onClick={randomizeColors}
-          style={{
-            width: '100%',
-            padding: '12px',
-            marginBottom: '24px',
-            backgroundColor: '#4B5563',
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            transition: 'background-color 0.2s',
-            ':hover': {
-              backgroundColor: '#374151'
-            }
-          }}
-        >
-          Randomize Colors
-        </button>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+          <button
+            onClick={generateBrandKit}
+            style={{
+              flex: 1,
+              padding: '12px',
+              backgroundColor: '#2563EB',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              ':hover': {
+                backgroundColor: '#1D4ED8'
+              }
+            }}
+          >
+            New Brand Kit
+          </button>
+          <button
+            onClick={randomizeStyle}
+            style={{
+              flex: 1,
+              padding: '12px',
+              backgroundColor: '#4B5563',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+              ':hover': {
+                backgroundColor: '#374151'
+              }
+            }}
+          >
+            Randomize Style
+          </button>
+        </div>
         <div className="control-group">
           <label>Layout</label>
           <select 
@@ -322,22 +396,36 @@ function App() {
         </div>
 
         <div className="control-group">
-          <label>Title text</label>
-          <select value={titleStyle} onChange={(e) => setTitleStyle(e.target.value)}>
-            {Object.keys(textStyles.title).map(style => (
-              <option key={style} value={style}>{style}</option>
+          <label>Title font</label>
+          <select 
+            value={currentFontPair.title.fontFamily} 
+            onChange={(e) => setCurrentFontPair(prev => ({
+              ...prev,
+              title: availableFonts.display.find(f => f.family === e.target.value)
+            }))}
+          >
+            {availableFonts.display.map(font => (
+              <option key={font.family} value={font.family}>{font.name}</option>
             ))}
           </select>
         </div>
 
         <div className="control-group">
-          <label>Body text</label>
-          <select value={bodyStyle} onChange={(e) => setBodyStyle(e.target.value)}>
-            {Object.keys(textStyles.body).map(style => (
-              <option key={style} value={style}>{style}</option>
+          <label>Body font</label>
+          <select 
+            value={currentFontPair.body.fontFamily} 
+            onChange={(e) => setCurrentFontPair(prev => ({
+              ...prev,
+              body: availableFonts.body.find(f => f.family === e.target.value)
+            }))}
+          >
+            {availableFonts.body.map(font => (
+              <option key={font.family} value={font.family}>{font.name}</option>
             ))}
           </select>
         </div>
+
+
 
         <div className="control-group">
           <label>Background color</label>
